@@ -1,0 +1,19 @@
+body {
+  background-image: url('http://subtlepatterns.com/patterns/furley_bg.png');
+}
+#logo {
+  display: block;
+  margin: 60px auto;
+}
+#container {
+  text-align: center;
+  border-radius: 30px;
+  background-color: rgba(100, 100, 100, 0.1);
+  padding: 30px 10px;
+  width: 500px;
+  margin: 0 auto;
+}
+.btn {
+  margin: 5px;
+}
+

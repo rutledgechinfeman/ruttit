@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Ruttit Options</title>
+  <meta name="description" content="A cleaner reddit, so you can waste time better." />
+  <meta name="author" content="Rutledge Chin Feman" />
+
+  <script type="text/javascript" src="../assets/js/jquery-1.8.0.js"></script>
+  <script type='text/javascript' src='../js/settings.js'></script>
+  <link href="../assets/css/bootstrap.css" rel="stylesheet" />
+  <style type="text/css">
+    .input-mini {
+      text-transform: uppercase;
+    }
+
+    .container {
+      width: auto;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Options</h1>
+
+  <p>Want something more? <a href="http://www.reddit.com/r/ruttit" target="_blank">Tell me about it!</a></p>
+
+  <form id='settings' class="form-horizontal">
+    <fieldset>
+      <div class="control-group">
+        <label class="control-label" for="showscores">Show scores</label>
+
+        <div class="controls">
+          <label class="checkbox">
+            <input type="checkbox" id="showscores" value="showscores" />
+            I don't much care for this one.
+          </label>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="listthumbnail">Show thumbnails</label>
+
+        <div class="controls">
+          <label class="checkbox">
+            <input type="checkbox" id="listthumbnail" value="listthumbnail" />
+            Squint!
+          </label>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="hidensfw">Filter out NSFW</label>
+
+        <div class="controls">
+          <label class="checkbox">
+            <input type="checkbox" id="hidensfw" value="hidensfw" />
+            Better check this one at work :)
+          </label>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="allowjs">Allow JS by default</label>
+
+        <div class="controls">
+          <label class="checkbox">
+            <input type="checkbox" id="allowjs" value="allowjs" />
+            Some pages use JavaScript to pop out of iframes, which makes browsing less fun.
+          </label>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="jswhitelist">JS Whitelist</label>
+
+        <div class="controls">
+          <textarea class="input-xlarge" id="jswhitelist" rows="8"></textarea>
+
+          <p class="help-block">A new-line delimited list of domains that are always allowed to run JavaScript. These are regular expressions.</p>
+        </div>
+      </div>
+    </fieldset>
+    <div class="form-actions">
+      <button id='submit' class="btn btn-primary" type='submit' form='settings'>Save changes</button>
+    </div>
+  </form>
+</div>
+</body>
+
+<script type='text/javascript' src='../js/options.js'></script>
+</html>
+

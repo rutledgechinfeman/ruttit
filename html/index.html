@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" ng-csp ng-app='ruttit'>
+<head>
+    <title>ruttit!</title>
+
+    <meta charset="utf-8">
+    <meta name="description" content="A cleaner reddit, so you can waste time better.">
+    <meta name="author" content="Rutledge Chin Feman">
+
+    <script type="text/javascript" src="../assets/js/angular-1.0.1.js"></script>
+    <script type="text/javascript" src="../assets/js/jquery-1.8.0.js"></script>
+    <script type="text/javascript" src="../assets/js/mousetrap.js"></script>
+    <script type="text/javascript" src="../assets/js/bootstrap.js"></script>
+
+    <script type="text/javascript" src="../js/settings.js"></script>
+    <script type="text/javascript" src="../js/reddit-util.js"></script>
+    <script type="text/javascript" src="../js/thinglist.js"></script>
+    <script type="text/javascript" src="../js/cache.js"></script>
+    <script type="text/javascript" src="../js/workspace.js"></script>
+    <script type="text/javascript" src="../js/ruttit.js"></script>
+
+    <link rel='stylesheet' type='text/css' href='../assets/css/bootstrap.css' />
+    <link rel='stylesheet' type='text/css' href='../css/ruttit.css' />
+</head>
+<body>
+    <!-- As much as a despise how much markup is involved here, bootstrap's navbar
+    makes everything prettier, so here it is. -->
+    <div class="navbar navbar-fixed-top" ng-controller="RuttitCtrl">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+
+                <!-- subreddit query form -->
+                <form id="srform" class="navbar-search" ng-submit='srSubmit()'>
+                    <input type="text" id="srinput" class="search-query" ng-model="subreddit" placeholder='frontpage'/>
+                    <input type="submit" ng-show="false"/>
+                </form>
+
+                <!-- current page title -->
+                <a class="brand">ruttit!</a>
+
+                <!-- options -->
+                <div class="btn-group pull-right">
+                    <a href="#" class="btn dropdown-toggle" data-toggle="dropdown"><i class='icon-wrench' ng-show="!loggedin"></i><span ng-show='loggedin'>{{username}}</span> <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li ng-show="!loggedin"><a data-toggle='modal' data-target='#login' href='#'><i class='icon-user'></i> Log in</a></li>
+                        <li ng-show="loggedin"><a data-toggle='modal' data-target='#post' href='#'><i class='icon-edit'></i> Post</a></li>
+                        <li ng-show='loggedin'><a href='#' ng-click="menuAction('logout')"><i class='icon-user'></i> Log out</a></li>
+                        <li class="divider"></li>
+                        <li ng-show='loggedin'><a href="#" ng-click="menuAction('upvote')"><i class='icon-circle-arrow-up'></i> Upvote</a></li>
+                        <li ng-show='loggedin'><a href="#" ng-click="menuAction('downvote')"><i class='icon-circle-arrow-down'></i> Downvote</a></li>
+                        <li class="divider" ng-show="loggedin"></li>
+                        <li><a href="#" ng-click="menuAction('togglejs')"><i class='icon-lock'></i> Toggle JS</a></li>
+                        <li><a href="#" ng-click="menuAction('refresh')"><i class='icon-refresh'></i> Reload original</a></li>
+                        <li><a href="#" ng-click="menuAction('bookmark')"><i class='icon-star'></i> Bookmark page</a></li>
+                        <li class="divider"></li>
+                        <li><a data-toggle="modal" data-target="#kbshort" href="#"><i class='icon-share-alt'></i> Show key controls</a></li>
+                        <li><a href="#" ng-click="menuAction('togglethings')"><i class='icon-list-alt'></i> Toggle listings</a></li>
+                        <li class="divider"></li>
+                        <li><a href="options.html" target="content-frame" ng-click="menuAction('loadOptions')"><i class='icon-cog'></i> Settings</a></li>
+                        <li><a href="http://reddit.com/r/ruttit" target="content-frame"><i class='icon-comment'></i> Feedback</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- /Navbar -->
+
+    <!-- Listings -->
+    <ul id="thinglist" class="unstyled hasalert-{{alert}} thinglisthidden-{{hidden}}" ng-controller="ThinglistCtrl" when-scrolled="load()">
+        <div class="alert alert-info thinglist-alert" ng-click="retryLoad()">
+            (click retries) {{alertmsg}}
+        </div>
+        <li ng-repeat="thing in thinglist" class='thing-container active-{{thing.active}}' ng-click="activate($event, thing)" ng-mouseenter="hovered($event, thing)" ng-show="!(filternsfw == 'true' && thing.over_18)">
+            <a href="{{thing.url}}" target="content-frame" class="thing">
+                <!-- Badges -->
+                <span class="label muted" ng-show="scores">
+                    {{thing.ups - things.downs}}
+                </span>
+                <span class="label label-warning" ng-show="thing.likes == true">
+                    <i class="icon-circle-arrow-up icon-white"> </i>
+                </span>
+                <span class="label label-info" ng-show="thing.likes == false">
+                    <i class="icon-circle-arrow-down icon-white"> </i>
+                </span>
+                <span class="label label-important" ng-show="thing.over_18">
+                    18+
+                </span>
+
+                <h1><img src="{{thing.thumbnail}}" class="tnail" ng-show="thing.thumbnail && icons" />{{thing.title}}</h1>
+            </a>
+
+            <div class="details">
+                <div>
+                    <h1>{{thing.title}}</h1>
+                    <span>(<a href="{{thing.url}}"  ng-click="detailClicked($event)">{{thing.domain}}</a>)</span>
+                </div>
+                <span>
+                    by <a href="http://www.reddit.com/u/{{thing.author}}" ng-click="detailClicked($event)">{{thing.author}}</a>
+                    in <a href="http://www.reddit.com{{thing.permalink}}" ng-click="detailClicked($event)">r/{{thing.subreddit}}</a>
+                </span>
+            </div>
+        </li>
+
+        <div id='tlprogress' class="progress progress-striped active" ng-show="loading">
+            <div class="bar" style="width: 100%;"></div>
+        </div>
+    </ul>
+    <!-- /Listings -->
+
+    <!-- Container fills remaining space -->
+    <div id='workspace' ng-controller="WorkspaceCtrl">
+      <iframe name='content-frame' id='content-frame' class='frame showcomments-{{showcomments}}' scrolling='yes' src="{{src}}" ng-controller="ContentFrameCtrl"></iframe>
+        <div id='comment-header' ng-click='toggleComments(null)'>
+            <a href='#' class='pull-right' style='text-decoration: none;'>
+                <i class='icon-comment'></i>
+                <i class='icon-chevron-up' ng-show="!showcomments"></i>
+                <i class='icon-chevron-down' ng-show="showcomments"></i>
+            </a>
+        </div>
+        <iframe name='comment-frame' id='comment-frame' class='frame' scrolling='yes' src="{{src}}" ng-controller="CommentFrameCtrl"></iframe>
+    </div>
+    <!-- /Workspace -->
+
+    <!-- Keyboard shortcut modal -->
+    <div class="modal hide fade" id="kbshort" ng-controller='SettingsCtrl'>
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h3>Keyboard Shortcuts</h3>
+        </div>
+        <div class="modal-body">
+            <table class='table table-striped table-bordered'>
+                <tbody>
+                  <tr ng-repeat='shortcut in kbShortcuts'>
+                    <td><center>{{shortcut.key.toUpperCase()}}</center></td>
+                    <td><center><i class='{{shortcut.icon}}'></i> </center></td>
+                    <td>{{shortcut.description}}</td>
+                  </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- /Keyboard shortcuts -->
+
+    <!-- Post modal -->
+    <div class="modal hide fade" id="post" ng-controller='PostCtrl'>
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h3>Submit a post</h3>
+        </div>
+        <div class="modal-body">
+            <center>
+                <!-- This is a bastardization of the bootstrap radio buttons -->
+                <div class="btn-group" style="display: inline-block; width: inherit;">
+                    <button id='posttourl' class="btn btn-primary" ng-class="{true: 'active', false: ''}[isLink]" ng-click='setIsLink(true)' ng-disabled='submitting'>Link</button>
+                    <button id='posttotext' class="btn btn-primary" ng-class="{true: 'active', false: ''}[!isLink]" ng-click='setIsLink(false)' ng-disabled='submitting'>Text</button>
+                </div>
+            </center>
+            <br />
+            <form id='postform' class='form-horizontal postlink' ng-submit='submit()'>
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="posttitle">Title*</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" id="posttitle" ng-model='title' ng-disabled='submitting'>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="postsr">Subreddit*</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" id="postsr" ng-model='subreddit' ng-disabled='submitting'>
+                        </div>
+                    </div>
+                    <div class="control-group" ng-show="isLink">
+                        <label class="control-label" for="posturl">URL</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" id="posturl" ng-model='url' ng-disabled='submitting'>
+                        </div>
+                    </div>
+                    <div class="control-group" ng-show="!isLink">
+                        <label class="control-label" for="posttext">Text</label>
+                        <div class="controls">
+                            <textarea class="input-xlarge" id="posttext" ng-model='text' rows=6 ng-disabled='submitting'></textarea>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <div id='postalert' class='alert alert-error' ng-show='error && error.length'>
+              <strong>Reddit says:</strong> {{error}}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id='postsubmit' type="submit" form='postform' class="btn btn-primary" data-loading-text='wait' ng-disabled='submitting'>Submit</button>
+        </div>
+    </div>
+    <!-- /Post -->
+
+    <!-- Log in modal -->
+    <div class="modal hide fade" id="login" ng-controller='LoginCtrl'>
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h3>Log in</h3>
+        </div>
+        <div class="modal-body">
+            <form id='loginform' class='form-horizontal' ng-submit='submit()'>
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="loginusername">Username</label>
+                        <div class="controls">
+                          <input type="text" class="input-xlarge" id="loginusername" ng-model="username" ng-disabled='submitting'>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="loginpassword">Password</label>
+                        <div class="controls">
+                            <input type="password" class="input-xlarge" id="loginpassword" ng-model="password" ng-disabled='submitting'>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <div id='loginalert' class='alert alert-warning' ng-show="error && error.length">
+              <strong>Reddit says:</strong> {{error}}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a id='lurk' href="#" class="btn" data-dismiss="modal" ng-disabled='submitting' ng-click='lurk()'>Lurk</a>
+            <button type="submit" form='loginform' class="btn btn-primary" ng-disabled='submitting'>Log in</button>
+        </div>
+    </div>
+    <!-- /Log in -->
+
+    <!-- Cache -->
+    <link id='cache' rel='prerender' ng-controller="CacheCtrl" href="{{url}}">
+    <!-- /Cache -->
+</body>
+</html>

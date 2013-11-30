@@ -1,0 +1,27 @@
+{
+    "manifest_version":2,
+    "name":"ruttit",
+    "version":"0.9.0",
+    "description":"A cleaner reddit, so you can waste time better.",
+    "options_page":"html/options.html",
+    "app":{
+        "launch":{
+            "local_path":"html/index.html"
+        }
+    },
+    "permissions":[
+        "bookmarks",
+        "tabs",
+        "history",
+        "http://*.reddit.com/*/*",
+        "https://*.reddit.com/*/*"
+    ],
+    "incognito":"split",
+    "icons":{
+        "16":"img/logo-16.png",
+        "32":"img/logo-32.png",
+        "48":"img/logo-48.png",
+        "128":"img/logo-128.png",
+        "256":"img/logo-256.png"
+    }
+}
